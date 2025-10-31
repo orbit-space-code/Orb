@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: orbitspace_compyle
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - REDIS_URL=redis://redis:6379
+      - NEXTJS_API_URL=http://nextjs:3000
+      - NEXTJS_API_SECRET=${NEXTJS_API_SECRET}
+      - WORKSPACE_ROOT=/workspaces
+      - GIT_BOT_NAME=Compyle Bot
+      - GIT_BOT_EMAIL=bot@compyle.dev
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
+      - GITHUB_APP_PRIVATE_KEY_PATH=/app/github-app-key.pem
+      - RESEARCH_AGENT_MODEL=claude-sonnet-4
+      - PLANNING_AGENT_MODEL=claude-sonnet-4
+      - IMPLEMENTATION_AGENT_MODEL=claude-haiku-4
+      - REVIEW_AGENT_MODEL=claude-sonnet-4
+      - MAX_CONCURRENT_AGENTS=5
+    volumes:
+      - ./system-plugins:/app/system-plugins
+      - workspaces:/workspaces
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile.nextjs
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/orbitspace_compyle
+      - FASTAPI_URL=http://fastapi:8000
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
+      - GITHUB_APP_PRIVATE_KEY=${GITHUB_APP_PRIVATE_KEY}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTJS_API_SECRET=${NEXTJS_API_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      fastapi:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+  workspaces:
