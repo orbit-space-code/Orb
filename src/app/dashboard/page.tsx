@@ -74,77 +74,20 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
-              <a
+              <ProjectCard
                 key={project.id}
-                href={`/projects/${project.id}`}
-                className="block p-6 bg-gray-900 border border-gray-800 rounded-lg hover:border-accent transition-colors"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-semibold text-white">{project.name}</h3>
-                  <span
-                    className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                      project.status
-                    )}`}
-                  >
-                    {project.status}
-                  </span>
-                </div>
-
-                {project.description && (
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                    {project.description}
-                  </p>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`px-3 py-1 text-xs font-semibold rounded-full ${getPhaseColor(
-                      project.currentPhase
-                    )}`}
-                  >
-                    {project.currentPhase}
-                  </span>
-                  <span className="text-gray-500 text-xs">
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </a>
+                id={project.id}
+                name={project.name}
+                description={project.description || undefined}
+                currentPhase={project.currentPhase}
+                status={project.status}
+                createdAt={project.createdAt.toISOString()}
+                updatedAt={project.updatedAt.toISOString()}
+              />
             ))}
           </div>
         )}
       </main>
     </div>
   )
-}
-
-function getPhaseColor(phase: string): string {
-  switch (phase) {
-    case "RESEARCH":
-      return "bg-phase-research/20 text-phase-research"
-    case "PLANNING":
-      return "bg-phase-planning/20 text-phase-planning"
-    case "IMPLEMENTATION":
-      return "bg-phase-implementation/20 text-phase-implementation"
-    case "COMPLETED":
-      return "bg-phase-complete/20 text-phase-complete"
-    default:
-      return "bg-gray-700 text-gray-300"
-  }
-}
-
-function getStatusColor(status: string): string {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-status-active/20 text-status-active"
-    case "PAUSED":
-      return "bg-status-paused/20 text-status-paused"
-    case "FAILED":
-      return "bg-status-failed/20 text-status-failed"
-    case "CANCELLED":
-      return "bg-status-cancelled/20 text-status-cancelled"
-    case "COMPLETED":
-      return "bg-phase-complete/20 text-phase-complete"
-    default:
-      return "bg-gray-700 text-gray-300"
-  }
 }
