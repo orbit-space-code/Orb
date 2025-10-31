@@ -95,11 +95,9 @@ class AgentExecutor:
         project_id: str,
         phase: str,
         inputs: Dict[str, Any]
-    ):
+    ) -> Dict[str, Any]:
         """Run agent execution loop"""
         try:
-            # Set initial status
-            await self.redis.set_task_status(task_id, "running")
 
             # Get workspace path
             workspace_path = self.file_manager.get_workspace_path(project_id)
