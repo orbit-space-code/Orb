@@ -185,11 +185,12 @@ class AgentExecutor:
                 "iterations": iteration
             })
 
-            # Set final status
-            await self.redis.set_task_status(task_id, "completed", {
+            # Return result
+            return {
+                "success": True,
                 "output": final_output,
                 "iterations": iteration
-            })
+            }
 
         except Exception as e:
             # Publish error event
@@ -198,10 +199,8 @@ class AgentExecutor:
                 "error": str(e)
             })
 
-            # Set failed status
-            await self.redis.set_task_status(task_id, "failed", {
-                "error": str(e)
-            })
+            # Raise exception to be handled by caller
+            raise
 
     def _build_system_prompt(
         self,
