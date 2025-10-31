@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  githubId      Int       @unique
+  username      String
+  email         String?
+  avatarUrl     String?
+  accessToken   String    // GitHub App access token (encrypted)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  projects      Project[]
+
+  @@map("users")
+}
+
+model Project {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name            String
+  description     String?   // User's feature request
+  currentPhase    Phase     @default(IDLE)
+  status          Status    @default(ACTIVE)
+
+  workspacePath   String    // e.g., /workspaces/abc123
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  completedAt     DateTime?
+
+  repositories    Repository[]
+  questions       Question[]
+  logs            Log[]
+
+  @@map("projects")
+  @@index([userId])
+  @@index([status])
+}
+
+enum Phase {
+  IDLE
+  RESEARCH
+  PLANNING
+  IMPLEMENTATION
+  COMPLETED
+}
+
+enum Status {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model Repository {
+  id              String    @id @default(uuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name            String    // e.g., "frontend"
+  url             String    // GitHub repository URL
+  branch          String    // Feature branch name
+  defaultBranch   String    @default("main")
+
+  clonedAt        DateTime  @default(now())
+  lastCommitAt    DateTime?
+
+  @@map("repositories")
+  @@index([projectId])
+}
+
+model Question {
+  id              String    @id @default(uuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  questionText    String
+  choices         Json      // Array of choice strings
+  imageUrl        String?   // Optional diagram/mockup URL
+
+  answer          String?   // Selected answer
+  answeredAt      DateTime?
+
+  askedAt         DateTime  @default(now())
+  phase           Phase     @default(PLANNING)
+
+  @@map("questions")
+  @@index([projectId])
+}
+
+model Log {
+  id              String    @id @default(uuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  phase           Phase
+  agentName       String    // e.g., "research-agent"
+  logType         LogType
+  message         String
+  metadata        Json?     // Additional context
+
+  createdAt       DateTime  @default(now())
+
+  @@map("logs")
+  @@index([projectId, createdAt])
+}
+
+enum LogType {
+  INFO
+  PROGRESS
+  TOOL_USE
+  WARNING
+  ERROR
+  QUESTION
+  ANSWER
+}
