@@ -17,6 +17,11 @@ from src.orchestrator.meta_agent import MetaAgent
 from src.plugins.loader import PluginLoader
 from src.files.manager import FileManager
 from src.api import routes
+from src.utils.logger import setup_logger, get_logger
+
+# Setup root logger
+setup_logger("compyle", level=os.getenv("LOG_LEVEL", "INFO"), json_format=os.getenv("LOG_FORMAT") == "json")
+logger = get_logger(__name__)
 
 # Global instances
 redis_client: Optional[RedisClient] = None
