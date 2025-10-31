@@ -19,7 +19,8 @@
     "@monaco-editor/react": "^4.6.0",
     "tailwindcss": "^3.4.1",
     "autoprefixer": "^10.4.17",
-    "postcss": "^8.4.33"
+    "postcss": "^8.4.33",
+    "ioredis": "^5.3.2"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
