@@ -55,43 +55,38 @@ class AgentExecutor:
 
     async def execute_agent(
         self,
+        task_id: str,
         agent_name: str,
         project_id: str,
         phase: str,
         inputs: Dict[str, Any]
-    ) -> str:
+    ) -> Dict[str, Any]:
         """
         Execute agent with tool calling loop
 
         Args:
+            task_id: Task identifier (passed from meta-agent)
             agent_name: Name of agent to execute
             project_id: Project identifier
             phase: Current phase (research/planning/implementation)
             inputs: Agent inputs (feature_request, etc.)
 
         Returns:
-            Task ID
+            Result dictionary
         """
-        # Generate task ID
-        task_id = str(uuid.uuid4())
-
         # Load agent definition
         agent_def = self.plugin_loader.get_agent(agent_name)
         if not agent_def:
             raise ValueError(f"Agent not found: {agent_name}")
 
-        # Start execution in background
-        asyncio.create_task(
-            self._run_agent(
-                task_id=task_id,
-                agent_def=agent_def,
-                project_id=project_id,
-                phase=phase,
-                inputs=inputs
-            )
+        # Execute agent and return result
+        return await self._run_agent(
+            task_id=task_id,
+            agent_def=agent_def,
+            project_id=project_id,
+            phase=phase,
+            inputs=inputs
         )
-
-        return task_id
 
     async def _run_agent(
         self,
