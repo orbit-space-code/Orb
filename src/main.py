@@ -107,7 +107,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Pydantic models
+# Include API routes
+app.include_router(routes.router)
+
+# Pydantic models (kept for backward compatibility)
 class InitializeProjectRequest(BaseModel):
     project_id: str
     user_id: str
