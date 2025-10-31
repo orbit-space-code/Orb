@@ -35,65 +35,107 @@ meta_agent: Optional[MetaAgent] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup and shutdown events"""
+    """Startup and shutdown events with comprehensive error handling"""
     global redis_client, plugin_loader, claude_client, agent_executor, workspace_manager, file_manager, meta_agent
 
-    # Startup
-    print("Initializing Orbitspace Compyle...")
+    try:
+        # Startup
+        logger.info("🚀 Initializing Orbitspace Compyle...")
 
-    # Initialize Redis
-    redis_client = get_redis_client()
-    await redis_client.connect()
-    print("✓ Redis connected")
+        # Initialize Redis
+        try:
+            redis_client = get_redis_client()
+            await redis_client.connect()
+            logger.info("✓ Redis connected")
+        except Exception as e:
+            logger.error(f"❌ Failed to connect to Redis: {e}")
+            raise
 
-    # Initialize plugin loader
-    plugin_loader = PluginLoader()
-    plugin_loader.load_all_plugins()
-    print(f"✓ Loaded {len(plugin_loader.list_agents())} agents")
+        # Initialize plugin loader
+        try:
+            plugin_loader = PluginLoader()
+            plugin_loader.load_all_plugins()
+            agent_count = len(plugin_loader.list_agents())
+            logger.info(f"✓ Loaded {agent_count} agents")
+        except Exception as e:
+            logger.error(f"❌ Failed to load plugins: {e}")
+            raise
 
-    # Initialize Claude client
-    claude_client = ClaudeClient()
-    print("✓ Claude client initialized")
+        # Initialize Claude client
+        try:
+            claude_client = ClaudeClient()
+            logger.info("✓ Claude client initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize Claude client: {e}")
+            raise
 
-    # Initialize file manager
-    file_manager = FileManager()
-    print("✓ File manager initialized")
+        # Initialize file manager
+        try:
+            file_manager = FileManager()
+            logger.info("✓ File manager initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize file manager: {e}")
+            raise
 
-    # Initialize workspace manager
-    workspace_manager = WorkspaceManager()
-    print("✓ Workspace manager initialized")
+        # Initialize workspace manager
+        try:
+            workspace_manager = WorkspaceManager()
+            logger.info("✓ Workspace manager initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize workspace manager: {e}")
+            raise
 
-    # Initialize agent executor
-    agent_executor = AgentExecutor(
-        plugin_loader=plugin_loader,
-        claude_client=claude_client,
-        redis_client=redis_client,
-        file_manager=file_manager
-    )
-    print("✓ Agent executor initialized")
+        # Initialize agent executor
+        try:
+            agent_executor = AgentExecutor(
+                plugin_loader=plugin_loader,
+                claude_client=claude_client,
+                redis_client=redis_client,
+                file_manager=file_manager
+            )
+            logger.info("✓ Agent executor initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize agent executor: {e}")
+            raise
 
-    # Initialize meta-agent coordinator
-    meta_agent = MetaAgent(
-        agent_executor=agent_executor,
-        redis_client=redis_client,
-        workspace_manager=workspace_manager,
-        file_manager=file_manager
-    )
-    print("✓ Meta-agent coordinator initialized")
+        # Initialize meta-agent coordinator
+        try:
+            meta_agent = MetaAgent(
+                agent_executor=agent_executor,
+                redis_client=redis_client,
+                workspace_manager=workspace_manager,
+                file_manager=file_manager
+            )
+            logger.info("✓ Meta-agent coordinator initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize meta-agent: {e}")
+            raise
 
-    # Inject dependencies into routes
-    routes.set_dependencies(workspace_manager, meta_agent, redis_client)
-    print("✓ Routes configured")
+        # Inject dependencies into routes
+        try:
+            routes.set_dependencies(workspace_manager, meta_agent, redis_client)
+            logger.info("✓ Routes configured")
+        except Exception as e:
+            logger.error(f"❌ Failed to configure routes: {e}")
+            raise
 
-    print("🚀 Orbitspace Compyle is ready!")
+        logger.info("🎉 Orbitspace Compyle is ready!")
 
-    yield
+        yield
 
-    # Shutdown
-    print("Shutting down...")
-    if redis_client:
-        await redis_client.disconnect()
-    print("✓ Redis disconnected")
+    except Exception as e:
+        logger.critical(f"💥 Fatal error during startup: {e}")
+        raise
+
+    finally:
+        # Shutdown
+        logger.info("Shutting down...")
+        try:
+            if redis_client:
+                await redis_client.disconnect()
+                logger.info("✓ Redis disconnected")
+        except Exception as e:
+            logger.error(f"Error during shutdown: {e}")
 
 
 app = FastAPI(
