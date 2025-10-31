@@ -13,8 +13,10 @@ from src.orchestrator.workspace import WorkspaceManager
 from src.orchestrator.agent_executor import AgentExecutor
 from src.orchestrator.claude_client import ClaudeClient
 from src.orchestrator.redis_client import RedisClient, get_redis_client
+from src.orchestrator.meta_agent import MetaAgent
 from src.plugins.loader import PluginLoader
 from src.files.manager import FileManager
+from src.api import routes
 
 # Global instances
 redis_client: Optional[RedisClient] = None
@@ -23,12 +25,13 @@ claude_client: Optional[ClaudeClient] = None
 agent_executor: Optional[AgentExecutor] = None
 workspace_manager: Optional[WorkspaceManager] = None
 file_manager: Optional[FileManager] = None
+meta_agent: Optional[MetaAgent] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events"""
-    global redis_client, plugin_loader, claude_client, agent_executor, workspace_manager, file_manager
+    global redis_client, plugin_loader, claude_client, agent_executor, workspace_manager, file_manager, meta_agent
 
     # Startup
     print("Initializing Orbitspace Compyle...")
@@ -63,6 +66,19 @@ async def lifespan(app: FastAPI):
         file_manager=file_manager
     )
     print("✓ Agent executor initialized")
+
+    # Initialize meta-agent coordinator
+    meta_agent = MetaAgent(
+        agent_executor=agent_executor,
+        redis_client=redis_client,
+        workspace_manager=workspace_manager,
+        file_manager=file_manager
+    )
+    print("✓ Meta-agent coordinator initialized")
+
+    # Inject dependencies into routes
+    routes.set_dependencies(workspace_manager, meta_agent, redis_client)
+    print("✓ Routes configured")
 
     print("🚀 Orbitspace Compyle is ready!")
 
