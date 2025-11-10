@@ -1,0 +1,276 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(uuid())
+  githubId    Int       @unique
+  username    String
+  email       String?
+  avatarUrl   String?
+  accessToken String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  projects    Project[]
+  apiKeys     UserApiKey[]
+  codebases   Codebase[]
+
+  @@map("users")
+}
+
+model Project {
+  id            String        @id @default(uuid())
+  userId        String
+  name          String
+  description   String?
+  currentPhase  Phase         @default(IDLE)
+  status        Status        @default(ACTIVE)
+  workspacePath String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  completedAt   DateTime?
+  logs          Log[]
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pullRequests  PullRequest[]
+  questions     Question[]
+  repositories  Repository[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("projects")
+}
+
+model Repository {
+  id            String    @id @default(uuid())
+  projectId     String
+  name          String
+  url           String
+  branch        String
+  defaultBranch String    @default("main")
+  clonedAt      DateTime  @default(now())
+  lastCommitAt  DateTime?
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("repositories")
+}
+
+model Question {
+  id           String    @id @default(uuid())
+  projectId    String
+  questionText String
+  choices      Json
+  imageUrl     String?
+  answer       String?
+  answeredAt   DateTime?
+  askedAt      DateTime  @default(now())
+  phase        Phase     @default(PLANNING)
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("questions")
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  projectId String
+  phase     Phase
+  agentName String
+  logType   LogType
+  message   String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@map("logs")
+}
+
+model PullRequest {
+  id            String    @id @default(uuid())
+  projectId     String
+  repositoryUrl String
+  prNumber      Int
+  prUrl         String
+  branch        String
+  status        PRStatus  @default(OPEN)
+  title         String
+  labels        Json
+  isDraft       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  mergedAt      DateTime?
+  closedAt      DateTime?
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([repositoryUrl, prNumber])
+  @@index([projectId])
+  @@index([status])
+  @@map("pull_requests")
+}
+
+enum Phase {
+  IDLE
+  RESEARCH
+  PLANNING
+  IMPLEMENTATION
+  COMPLETED
+}
+
+enum Status {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum LogType {
+  INFO
+  PROGRESS
+  TOOL_USE
+  WARNING
+  ERROR
+  QUESTION
+  ANSWER
+}
+
+enum PRStatus {
+  OPEN
+  MERGED
+  CLOSED
+  DRAFT
+}
+
+// Advanced Codebase Analysis System Models
+
+model UserApiKey {
+  id           String   @id @default(uuid())
+  userId       String
+  provider     String   // anthropic, openai, etc.
+  encryptedKey String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
+  @@map("user_api_keys")
+}
+
+model Codebase {
+  id               String            @id @default(uuid())
+  userId           String
+  name             String
+  description      String?
+  sourceType       String            // git, upload, url
+  sourceUrl        String?
+  languagePrimary  String?
+  languages        Json              // array of detected languages
+  frameworkInfo    Json              // detected frameworks and versions
+  fileCount        Int               @default(0)
+  lineCount        Int               @default(0)
+  sizeBytes        BigInt            @default(0)
+  indexedAt        DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysisSessions AnalysisSession[]
+
+  @@index([userId])
+  @@index([sourceType])
+  @@index([languagePrimary])
+  @@map("codebases")
+}
+
+model AnalysisSession {
+  id                String        @id @default(uuid())
+  codebaseId        String
+  userId            String
+  mode              AnalysisMode
+  status            AnalysisStatus @default(PENDING)
+  toolsSelected     Json          // array of selected tool names
+  startedAt         DateTime      @default(now())
+  completedAt       DateTime?
+  estimatedDuration Int?          // seconds
+  actualDuration    Int?          // seconds
+  costEstimate      Decimal?      @db.Decimal(10, 4)
+  actualCost        Decimal?      @db.Decimal(10, 4)
+  errorMessage      String?
+  codebase          Codebase      @relation(fields: [codebaseId], references: [id], onDelete: Cascade)
+  toolResults       ToolResult[]
+  reports           AnalysisReport[]
+
+  @@index([codebaseId])
+  @@index([userId])
+  @@index([status])
+  @@index([mode])
+  @@map("analysis_sessions")
+}
+
+model ToolResult {
+  id            String          @id @default(uuid())
+  sessionId     String
+  toolName      String
+  toolVersion   String?
+  status        ToolStatus      @default(PENDING)
+  startedAt     DateTime        @default(now())
+  completedAt   DateTime?
+  results       Json            // tool-specific results
+  metrics       Json?           // performance metrics
+  issues        Json?           // found issues/violations
+  executionTime Int?            // milliseconds
+  errorMessage  String?
+  session       AnalysisSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([toolName])
+  @@index([status])
+  @@map("tool_results")
+}
+
+model AnalysisReport {
+  id          String          @id @default(uuid())
+  sessionId   String
+  reportType  String          // summary, technical, json, etc.
+  format      String          // pdf, html, json, md
+  title       String
+  content     String?         // for smaller reports
+  filePath    String?         // for larger reports stored as files
+  fileSize    Int?            // bytes
+  generatedAt DateTime        @default(now())
+  session     AnalysisSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([reportType])
+  @@index([format])
+  @@map("analysis_reports")
+}
+
+enum AnalysisMode {
+  NORMAL
+  STANDARD
+  DEEP
+}
+
+enum AnalysisStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ToolStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
