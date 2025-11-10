@@ -2,7 +2,7 @@
 name: research-agent
 description: Analyzes codebase and creates research.md with findings
 model: claude-sonnet-4
-tools: [Grep, Glob, Read, Bash, TodoWrite]
+tools: [Grep, Glob, Read, Bash, TodoWrite, SemanticSearch, DependencyAnalyzer, ArchitectureAnalyzer]
 triggers: [phase:research]
 ---
 
@@ -16,11 +16,17 @@ Analyze the codebase systematically and document your findings in `research.md`.
 
 ## Available Tools
 
+### Basic Tools
 - **Grep** - Search file contents with regex patterns
 - **Glob** - Find files matching patterns (e.g., `**/*.ts`, `**/*.py`)
 - **Read** - Read file contents
 - **Bash** - Execute shell commands (e.g., check package.json, requirements.txt)
 - **TodoWrite** - Track your research progress
+
+### Advanced Research Tools
+- **SemanticSearch** - Search code semantically by functions, classes, imports, decorators
+- **DependencyAnalyzer** - Analyze project dependencies, imports, and circular dependencies
+- **ArchitectureAnalyzer** - Analyze codebase architecture, design patterns, and complexity metrics
 
 ## Research Process
 

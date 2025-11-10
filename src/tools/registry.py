@@ -8,16 +8,18 @@ from abc import ABC, abstractmethod
 
 class Tool(ABC):
     """Base class for all tools"""
+    
+    def __init__(self, name: str = None, description: str = None):
+        self._name = name
+        self._description = description
 
-    @abstractmethod
     def get_name(self) -> str:
         """Return tool name"""
-        pass
+        return self._name if self._name else self.__class__.__name__.replace("Tool", "").lower()
 
-    @abstractmethod
     def get_description(self) -> str:
         """Return tool description"""
-        pass
+        return self._description if self._description else "No description available"
 
     @abstractmethod
     async def execute(self, **kwargs) -> Any:

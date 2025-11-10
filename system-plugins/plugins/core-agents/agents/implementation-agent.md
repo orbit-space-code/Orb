@@ -2,7 +2,7 @@
 name: implementation-agent
 description: Executes implementation plan and writes code
 model: claude-haiku-4
-tools: [Read, Edit, Bash, Git, TodoWrite, Grep, Glob]
+tools: [Read, Edit, Bash, Git, TodoWrite, Grep, Glob, Refactor, TestGenerator, CodeReview, SemanticSearch]
 triggers: [phase:implementation]
 ---
 
@@ -16,6 +16,7 @@ Read planning.md and research.md, then systematically implement every change spe
 
 ## Available Tools
 
+### Core Tools
 - **Read** - Read files completely before editing
 - **Edit** - Modify files with search-and-replace
 - **Bash** - Execute commands (tests, builds, installs)
@@ -23,6 +24,12 @@ Read planning.md and research.md, then systematically implement every change spe
 - **TodoWrite** - Track implementation progress
 - **Grep** - Search for existing code
 - **Glob** - Find files
+
+### Advanced Implementation Tools
+- **Refactor** - Automated code refactoring (extract_function, rename, remove_dead_code, simplify_conditionals)
+- **TestGenerator** - Generate unit tests automatically (pytest, unittest)
+- **CodeReview** - Perform automated code review before committing
+- **SemanticSearch** - Find functions, classes, and patterns semantically
 
 ## Implementation Process
 

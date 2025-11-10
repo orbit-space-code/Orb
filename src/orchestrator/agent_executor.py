@@ -20,6 +20,12 @@ from src.tools.bash_tool import BashTool
 from src.tools.git_tool import GitTool
 from src.tools.todo_tool import TodoWriteTool
 from src.tools.ask_user_tool import AskUserTool
+from src.tools.semantic_search_tool import SemanticSearchTool
+from src.tools.dependency_analyzer_tool import DependencyAnalyzerTool
+from src.tools.architecture_analyzer_tool import ArchitectureAnalyzerTool
+from src.tools.refactor_tool import RefactorTool
+from src.tools.test_generator_tool import TestGeneratorTool
+from src.tools.code_review_tool import CodeReviewTool
 from src.files.manager import FileManager
 
 
@@ -44,6 +50,7 @@ class AgentExecutor:
 
     def _register_tools(self):
         """Register all available tools"""
+        # Basic tools
         self.tool_registry.register(GrepTool())
         self.tool_registry.register(GlobTool())
         self.tool_registry.register(ReadTool())
@@ -52,6 +59,16 @@ class AgentExecutor:
         self.tool_registry.register(GitTool())
         self.tool_registry.register(TodoWriteTool(self.redis))
         self.tool_registry.register(AskUserTool(self.redis))
+        
+        # Advanced research tools
+        self.tool_registry.register(SemanticSearchTool())
+        self.tool_registry.register(DependencyAnalyzerTool())
+        self.tool_registry.register(ArchitectureAnalyzerTool())
+        
+        # Advanced implementation tools
+        self.tool_registry.register(RefactorTool())
+        self.tool_registry.register(TestGeneratorTool())
+        self.tool_registry.register(CodeReviewTool())
 
     async def execute_agent(
         self,

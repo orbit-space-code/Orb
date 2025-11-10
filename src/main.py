@@ -145,6 +145,24 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Add production middleware
+from src.middleware import (
+    rate_limit_middleware,
+    metrics_middleware,
+    error_tracking_middleware,
+    get_metrics as get_app_metrics,
+    get_prometheus_metrics,
+)
+
+# Error tracking (first)
+app.middleware("http")(error_tracking_middleware)
+
+# Metrics collection
+app.middleware("http")(metrics_middleware)
+
+# Rate limiting
+app.middleware("http")(rate_limit_middleware)
+
 # CORS middleware for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
@@ -156,6 +174,10 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(routes.router)
+
+# Include analysis routes
+from src.api.analysis_routes import router as analysis_router
+app.include_router(analysis_router)
 
 # Pydantic models (kept for backward compatibility)
 class InitializeProjectRequest(BaseModel):
@@ -206,12 +228,23 @@ async def get_metrics():
             active_count = await redis_client.get_queue_length("tasks:active")
         except:
             pass
+    
+    # Get application metrics
+    app_metrics = await get_app_metrics()
 
     return {
         "active_agents": active_count,
         "queued_tasks": pending_count,
-        "workspace_count": 0  # Could track this
+        "workspace_count": 0,
+        "application": app_metrics,
     }
+
+
+# Prometheus metrics endpoint
+@app.get("/metrics/prometheus")
+async def prometheus_metrics():
+    """Prometheus-formatted metrics"""
+    return await get_prometheus_metrics()
 
 
 # Project management endpoints
