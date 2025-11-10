@@ -1,29 +1,36 @@
-# OrbitSpace - Advanced Codebase Analysis Platform
+# Orb - AI-Powered Code Generation Platform
 
-[![Deploy OrbitSpace](https://github.com/orbitspace/orbitspace/actions/workflows/deploy.yml/badge.svg)](https://github.com/orbitspace/orbitspace/actions/workflows/deploy.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Orb is an advanced AI-powered development platform that helps developers write better code faster through intelligent code generation, quality analysis, and GitHub integration.
 
-OrbitSpace is a comprehensive AI-powered codebase analysis platform that helps developers understand, analyze, and improve their code through advanced static analysis, security scanning, and intelligent recommendations.
-
-## 🚀 Features
+## ✨ Features
 
 ### Core Capabilities
-- **Multi-Source Codebase Import** - GitHub, GitLab, local upload, and URL import
-- **AI-Powered Analysis** - Bring your own API keys (Anthropic, OpenAI, custom)
-- **60+ Analysis Tools** - Static analysis, security scanning, performance optimization
-- **Three Analysis Modes** - Normal (5 min), Standard (20 min), Deep (60 min)
-- **Comprehensive Reporting** - PDF, HTML, JSON, and interactive dashboards
-- **GitHub Integration** - PR comments, automated analysis, GitHub Actions
+- **AI-Powered Code Generation**
+  - Multi-model support (Claude, GPT, local models)
+  - Context-aware code completion
+  - Template-based code generation
+  - Multi-language support (Python, JavaScript, TypeScript, and more)
 
-### Analysis Tools Suite
+### Code Quality & Analysis
+- **Static Code Analysis**
+  - Automated code reviews
+  - Security vulnerability detection
+  - Performance optimization suggestions
+  - Code style enforcement
 
-#### Static Analysis (15 tools)
-- ESLint, TSLint, Pylint, RuboCop, Checkstyle
-- SonarQube, CodeClimate, Codacy
-- Language-specific analyzers (Go vet, Rust clippy, etc.)
+### GitHub Integration
+- **Repository Management**
+  - Browse and search repositories
+  - File and directory operations
+  - Branch management
+  - Pull request automation
 
-#### Security Scanners (12 tools)
-- Bandit (Python), Brakeman (Ruby), ESLint Security
+### Development Tools
+- **Interactive Development Environment**
+  - Real-time code execution
+  - Debugging assistance
+  - Dependency visualization
+  - Code search and navigation
 - Snyk, OWASP Dependency Check, Safety
 - Secret scanners (GitLeaks, TruffleHog)
 - SAST tools (Semgrep, CodeQL)
@@ -55,171 +62,146 @@ OrbitSpace is a comprehensive AI-powered codebase analysis platform that helps d
 
 ## 🏗️ Architecture
 
-OrbitSpace is built with a modern, scalable architecture:
+Orb is built with a modern, scalable architecture:
 
-- **Frontend**: Next.js 14 with TypeScript and Tailwind CSS
+- **Frontend**: Next.js with TypeScript and Tailwind CSS
 - **Backend**: FastAPI with Python for agent orchestration
 - **Database**: PostgreSQL with Prisma ORM
 - **Cache**: Redis for task queuing and real-time updates
-- **Authentication**: NextAuth.js with GitHub OAuth
-- **AI Integration**: Anthropic Claude and OpenAI GPT APIs
+- **Authentication**: JWT with GitHub OAuth
+- **AI Integration**: Claude, GPT, and local models
 - **Deployment**: Docker containers with Kubernetes support
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.11+
-- PostgreSQL 15+
-- Redis 7+
+- Python 3.9+
+- Node.js 16+ (for frontend)
+- PostgreSQL (for production)
+- Redis (for caching and task queue)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/orbitspace/orbitspace.git
-   cd orbitspace
+   git clone https://github.com/yourusername/orb.git
+   cd orb
    ```
 
-2. **Install dependencies**
+2. **Set up Python environment**
    ```bash
-   # Install Node.js dependencies
-   npm install
-   
-   # Install Python dependencies
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
 3. **Set up environment variables**
    ```bash
    cp .env.example .env
-   
-   # Generate secure secrets
-   node generate-secrets.js
-   
-   # Copy the generated secrets to your .env file
-   # Edit .env with your other configuration
+   # Edit .env with your configuration
    ```
 
-4. **Set up the database**
+4. **Initialize the database**
    ```bash
-   npx prisma generate
-   npx prisma db push
+   python -m alembic upgrade head
    ```
 
-5. **Start the development servers**
+5. **Start the development server**
    ```bash
-   # Start Next.js frontend
-   npm run dev
-   
-   # Start FastAPI backend (in another terminal)
-   python main.py
+   uvicorn main:app --reload
    ```
 
-6. **Visit the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Documentation: http://localhost:8000/docs
+6. **Access the application**
+   - API: http://localhost:8000
+   - API Docs: http://localhost:8000/docs
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-Create a `.env` file with the following variables:
-
-#### 🔐 Generate Secure Secrets
-
-First, generate cryptographically secure secrets:
-
-```bash
-node generate-secrets.js
-```
-
-This will generate:
-- **NEXTAUTH_SECRET**: 128-character hex string for NextAuth JWT signing
-- **FASTAPI_SECRET_KEY**: 128-character hex string for FastAPI JWT/sessions
-- **NEXTJS_API_SECRET**: Base64-encoded secret for internal API communication
-- **ENCRYPTION_KEY**: 64-character hex string for API key encryption
-
-#### 📝 Complete Environment Configuration
+Create a `.env` file with these variables:
 
 ```env
+# Core Settings
+DEBUG=True
+SECRET_KEY=your-secret-key
+
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/orbitspace"
-
-# GitHub OAuth
-GITHUB_CLIENT_ID="your_github_client_id"
-GITHUB_CLIENT_SECRET="your_github_client_secret"
-
-# NextAuth
-NEXTAUTH_SECRET="your_nextauth_secret"
-NEXTAUTH_URL="http://localhost:3000"
+DATABASE_URL=sqlite:///./orb.db  # Use PostgreSQL in production
 
 # Redis
-REDIS_URL="redis://localhost:6379"
-# Or for Upstash Redis:
-# REDIS_URL="https://your-redis-url.upstash.io"
-# REDIS_TOKEN="your_redis_token"
+REDIS_URL=redis://localhost:6379/0
 
-# Encryption
-ENCRYPTION_KEY="your_32_byte_encryption_key"
+# GitHub OAuth (optional)
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
 
-# FastAPI Backend
-FASTAPI_URL="http://localhost:8000"
+# AI Providers
+ANTHROPIC_API_KEY=your-anthropic-key
+OPENAI_API_KEY=your-openai-key
 ```
 
-### GitHub OAuth Setup
+### GitHub Integration
 
-1. Go to GitHub Settings > Developer settings > OAuth Apps
-2. Create a new OAuth App with:
-   - Application name: OrbitSpace
-   - Homepage URL: http://localhost:3000 (or your domain)
-   - Authorization callback URL: http://localhost:3000/api/auth/callback/github
-3. Copy the Client ID and Client Secret to your `.env` file
+1. Create a GitHub OAuth App at [GitHub Developer Settings](https://github.com/settings/developers)
+2. Set the callback URL to: `http://localhost:8000/api/github/auth/callback`
+3. Add the client ID and secret to your `.env` file
 
-### API Key Management
-
-Users can securely store their AI service API keys:
-
-1. Navigate to Settings > API Keys
-2. Add your Anthropic or OpenAI API key
-3. Keys are encrypted and stored securely
-4. Test keys to ensure they're valid
-
-## 📊 Usage
+## 💻 Usage
 
 ### Basic Workflow
 
-1. **Import Codebase**
-   - Connect GitHub repository
-   - Upload local files
-   - Import from URL
+1. **Start a New Project**
+   ```python
+   from orb.services.code_generation import CodeGenerator
+   
+   generator = CodeGenerator()
+   response = await generator.generate_code(
+       prompt="Create a FastAPI endpoint that returns 'Hello, World!'",
+       language="python"
+   )
+   print(response.generated_code)
+   ```
 
-2. **Configure Analysis**
-   - Choose analysis mode (Normal/Standard/Deep)
-   - Select specific tools
-   - Set custom parameters
+2. **GitHub Integration**
+   ```python
+   from orb.services.github_service import GitHubService
+   
+   github = GitHubService(access_token="your-github-token")
+   repos = await github.list_repositories()
+   for repo in repos:
+       print(repo.full_name)
+   ```
 
-3. **Run Analysis**
-   - Monitor real-time progress
-   - View tool execution status
-   - Get notifications on completion
+3. **Code Quality Analysis**
+   ```python
+   from orb.services.code_quality import analyze_code
+   
+   report = analyze_code("path/to/your/file.py")
+   print(f"Code Quality Score: {report.score}")
+   print("Issues found:", report.issues)
+   ```
 
-4. **Review Results**
-   - Interactive dashboard
-   - Detailed technical reports
-   - Executive summaries
-   - Export in multiple formats
+## 📚 Documentation
 
-### Analysis Modes
+For detailed documentation, please refer to:
+- [API Reference](/docs/api.md)
+- [Getting Started Guide](/docs/getting-started.md)
+- [Deployment Guide](/docs/deployment.md)
 
-- **Normal Mode** (2-5 minutes)
-  - Basic static analysis
-  - Language-specific linting
-  - Simple security scanning
-  - Essential metrics
+## 🤝 Contributing
 
-- **Standard Mode** (10-20 minutes)
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by the Orb Team</p>
+</div>
   - Comprehensive static analysis
   - Security vulnerability scanning
   - Code quality metrics

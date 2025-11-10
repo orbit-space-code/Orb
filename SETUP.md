@@ -1,6 +1,6 @@
-# Orbitspace Compyle - Setup Guide
+# Orbitspace OrbitSpace - Setup Guide
 
-Complete setup guide for running the Compyle.ai replica system.
+Complete setup guide for running the OrbitSpace replica system.
 
 ## **System Architecture**
 
@@ -47,9 +47,9 @@ pip install -r requirements.txt
 
 ```bash
 # Start PostgreSQL (if using Docker)
-docker run --name compyle-postgres \
+docker run --name OrbitSpace-postgres \
   -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=orbitspace_compyle \
+  -e POSTGRES_DB=orbitspace_OrbitSpace \
   -p 5432:5432 \
   -d postgres:15
 
@@ -64,7 +64,7 @@ npx prisma generate
 
 ```bash
 # Start Redis (if using Docker)
-docker run --name compyle-redis \
+docker run --name OrbitSpace-redis \
   -p 6379:6379 \
   -d redis:7-alpine
 ```
@@ -73,7 +73,7 @@ docker run --name compyle-redis \
 
 1. Go to https://github.com/settings/apps/new
 2. Create a new GitHub App with these settings:
-   - **App name**: Orbitspace Compyle
+   - **App name**: Orbitspace OrbitSpace
    - **Homepage URL**: http://localhost:3000
    - **Callback URL**: http://localhost:3000/api/auth/callback/github
    - **Webhooks**: Disabled (not needed)
@@ -94,7 +94,7 @@ docker run --name compyle-redis \
 cp .env.local.example .env.local
 
 # Edit with your values
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/orbitspace_compyle"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/orbitspace_OrbitSpace"
 GITHUB_CLIENT_ID="your_github_client_id"
 GITHUB_CLIENT_SECRET="your_github_client_secret"
 GITHUB_APP_ID="your_github_app_id"
@@ -116,8 +116,8 @@ ANTHROPIC_API_KEY="your_anthropic_api_key"
 REDIS_URL="redis://localhost:6379"
 NEXTJS_API_URL="http://localhost:3000"
 WORKSPACE_ROOT="/workspaces"
-GIT_BOT_NAME="Compyle Bot"
-GIT_BOT_EMAIL="bot@compyle.dev"
+GIT_BOT_NAME="OrbitSpace Bot"
+GIT_BOT_EMAIL="bot@orbitspace.dev"
 GITHUB_APP_ID="your_github_app_id"
 GITHUB_APP_PRIVATE_KEY_PATH="/path/to/private-key.pem"
 ```
@@ -130,8 +130,8 @@ sudo mkdir -p /workspaces
 sudo chown $USER:$USER /workspaces
 
 # Or use a local directory
-mkdir -p ~/compyle-workspaces
-# Then set WORKSPACE_ROOT=~/compyle-workspaces in .env
+mkdir -p ~/OrbitSpace-workspaces
+# Then set WORKSPACE_ROOT=~/OrbitSpace-workspaces in .env
 ```
 
 ## **Step 7: Start the System**
@@ -216,16 +216,16 @@ redis-cli ping
 # Should return: PONG
 
 # Restart Redis
-docker restart compyle-redis
+docker restart OrbitSpace-redis
 ```
 
 ### **"PostgreSQL connection failed"**
 ```bash
 # Check PostgreSQL is running
-psql -h localhost -U postgres -d orbitspace_compyle
+psql -h localhost -U postgres -d orbitspace_OrbitSpace
 
 # Restart PostgreSQL
-docker restart compyle-postgres
+docker restart OrbitSpace-postgres
 ```
 
 ### **"Anthropic API error"**

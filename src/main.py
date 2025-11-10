@@ -1,5 +1,5 @@
 """
-Orbitspace Compyle - FastAPI Backend
+Orbitspace OrbitSpace - FastAPI Backend
 Main application entry point for agent orchestration and tool execution
 """
 from fastapi import FastAPI, HTTPException
@@ -17,10 +17,13 @@ from src.orchestrator.meta_agent import MetaAgent
 from src.plugins.loader import PluginLoader
 from src.files.manager import FileManager
 from src.api import routes
+from src.api.routers import codegen_router
+from src.services.template_manager import template_manager
+from src.config import settings
 from src.utils.logger import setup_logger, get_logger
 
 # Setup root logger
-setup_logger("compyle", level=os.getenv("LOG_LEVEL", "INFO"), json_format=os.getenv("LOG_FORMAT") == "json")
+setup_logger("OrbitSpace", level=os.getenv("LOG_LEVEL", "INFO"), json_format=os.getenv("LOG_FORMAT") == "json")
 logger = get_logger(__name__)
 
 # Global instances
@@ -40,7 +43,7 @@ async def lifespan(app: FastAPI):
 
     try:
         # Startup
-        logger.info("🚀 Initializing Orbitspace Compyle...")
+        logger.info("🚀 Initializing Orbitspace OrbitSpace...")
 
         # Initialize Redis
         try:
@@ -119,7 +122,7 @@ async def lifespan(app: FastAPI):
             logger.error(f"❌ Failed to configure routes: {e}")
             raise
 
-        logger.info("🎉 Orbitspace Compyle is ready!")
+        logger.info("🎉 Orbitspace OrbitSpace is ready!")
 
         yield
 
@@ -138,9 +141,12 @@ async def lifespan(app: FastAPI):
             logger.error(f"Error during shutdown: {e}")
 
 
+# Initialize template manager with built-in templates
+template_manager.initialize_templates()
+
 app = FastAPI(
-    title="Orbitspace Compyle API",
-    description="AI coding agent orchestration platform",
+    title="Orbitspace OrbitSpace API",
+    description="AI coding agent orchestration platform with Claude integration",
     version="0.1.0",
     lifespan=lifespan
 )
@@ -166,14 +172,16 @@ app.middleware("http")(rate_limit_middleware)
 # CORS middleware for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://nextjs:3000"],
-    allow_credentials=True,
+    allow_origins=settings.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Type", "Content-Length", "Authorization"],
+    allow_credentials=True,
 )
 
 # Include API routes
 app.include_router(routes.router)
+app.include_router(codegen_router.router)
 
 # Include analysis routes
 from src.api.analysis_routes import router as analysis_router

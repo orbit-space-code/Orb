@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-End-to-end system validation script for Orbitspace Compyle
+End-to-end system validation script for Orbitspace OrbitSpace
 Tests all critical components and connections
 """
 
@@ -181,7 +181,7 @@ class SystemValidator:
     async def run_all_tests(self):
         """Run all validation tests"""
         print("=" * 60)
-        print("🔍 Orbitspace Compyle - System Validation")
+        print("🔍 Orbitspace OrbitSpace - System Validation")
         print("=" * 60)
         print()
 

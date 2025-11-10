@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Orbitspace Compyle',
+  title: 'Orbitspace OrbitSpace',
   description: 'Collaborative AI coding agent platform',
 }
 

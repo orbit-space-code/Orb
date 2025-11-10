@@ -3,7 +3,7 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="max-w-4xl mx-auto text-center space-y-8">
         <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-          Orbitspace Compyle
+          Orbitspace OrbitSpace
         </h1>
 
         <p className="text-xl text-gray-300">

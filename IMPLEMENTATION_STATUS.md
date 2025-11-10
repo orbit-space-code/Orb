@@ -2,7 +2,7 @@
 
 ## Overview
 
-A substantial portion of the Orbitspace Compyle platform has been implemented. The core backend infrastructure is **functional** and ready for testing, while the frontend needs additional work.
+A substantial portion of the Orbitspace OrbitSpace platform has been implemented. The core backend infrastructure is **functional** and ready for testing, while the frontend needs additional work.
 
 ---
 

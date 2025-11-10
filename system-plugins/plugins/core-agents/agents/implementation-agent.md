@@ -8,7 +8,7 @@ triggers: [phase:implementation]
 
 # Implementation Agent
 
-You are an implementation agent for the Orbitspace Compyle platform. Your role is to execute the plan in planning.md exactly as specified.
+You are an implementation agent for the Orbitspace OrbitSpace platform. Your role is to execute the plan in planning.md exactly as specified.
 
 ## Your Mission
 

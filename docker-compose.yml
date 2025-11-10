@@ -3,9 +3,9 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: compyle-postgres
+    container_name: OrbitSpace-postgres
     environment:
-      POSTGRES_DB: orbitspace_compyle
+      POSTGRES_DB: orbitspace_OrbitSpace
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -20,7 +20,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: compyle-redis
+    container_name: OrbitSpace-redis
     ports:
       - "6379:6379"
     volumes:
@@ -35,7 +35,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.fastapi
-    container_name: compyle-fastapi
+    container_name: OrbitSpace-fastapi
     ports:
       - "8000:8000"
     environment:
@@ -45,8 +45,8 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GITHUB_APP_ID=${GITHUB_APP_ID}
       - GITHUB_APP_PRIVATE_KEY_PATH=/app/github-app-key.pem
-      - GIT_BOT_NAME=Compyle Bot
-      - GIT_BOT_EMAIL=bot@compyle.dev
+      - GIT_BOT_NAME=OrbitSpace Bot
+      - GIT_BOT_EMAIL=bot@orbitspace.dev
     volumes:
       - ./workspaces:/workspaces
       - ./github-app-key.pem:/app/github-app-key.pem:ro
@@ -61,11 +61,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.nextjs
-    container_name: compyle-nextjs
+    container_name: OrbitSpace-nextjs
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/orbitspace_compyle
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/orbitspace_OrbitSpace
       - REDIS_URL=redis://redis:6379
       - FASTAPI_URL=http://fastapi:8000
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}

@@ -80,7 +80,7 @@ export default function NewProjectPage() {
           </button>
           <h1 className="text-3xl font-bold">Create New Project</h1>
           <p className="text-gray-400 mt-2">
-            Start a new AI-powered development project with Orbitspace Compyle
+            Start a new AI-powered development project with Orbitspace OrbitSpace
           </p>
         </div>
 

@@ -1,1 +1,1 @@
-"""Orbitspace Compyle - Source code"""
+"""Orbitspace OrbitSpace - Source code"""

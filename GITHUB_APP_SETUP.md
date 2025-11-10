@@ -1,13 +1,13 @@
 # GitHub App Setup Guide
 
-Complete guide to creating and configuring a GitHub App for Orbitspace Compyle.
+Complete guide to creating and configuring a GitHub App for Orbitspace OrbitSpace.
 
 ## **Why We Need a GitHub App**
 
 The GitHub App provides:
 1. **OAuth Authentication** - Users sign in with GitHub
 2. **Repository Access** - Clone private repositories
-3. **Git Operations** - Create branches and commits as "Compyle Bot"
+3. **Git Operations** - Create branches and commits as "OrbitSpace Bot"
 4. **API Access** - List user's repositories
 
 ---
@@ -26,7 +26,7 @@ Or:
 
 ### **1.2 Fill in App Information**
 
-**GitHub App name:** `Orbitspace Compyle` (or your preferred name)
+**GitHub App name:** `Orbitspace OrbitSpace` (or your preferred name)
 
 **Homepage URL:** `http://localhost:3000` (development) or your production URL
 
@@ -87,7 +87,7 @@ App ID: 123456
 1. Scroll down to "Private keys"
 2. Click **"Generate a private key"**
 3. A `.pem` file will download
-4. Save this file securely (e.g., `~/compyle-github-app.pem`)
+4. Save this file securely (e.g., `~/OrbitSpace-github-app.pem`)
 
 **Important:** Keep this private key secure! Don't commit it to Git.
 
@@ -161,8 +161,8 @@ GITHUB_APP_ID="123456"
 GITHUB_APP_PRIVATE_KEY_PATH="/path/to/private-key.pem"
 
 # Git Bot Identity
-GIT_BOT_NAME="Compyle Bot"
-GIT_BOT_EMAIL="bot@compyle.dev"
+GIT_BOT_NAME="OrbitSpace Bot"
+GIT_BOT_EMAIL="bot@orbitspace.dev"
 ```
 
 ---

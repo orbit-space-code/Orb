@@ -33,13 +33,13 @@ class FileManager:
         workspace_path = self.get_workspace_path(project_id)
         os.makedirs(workspace_path, exist_ok=True)
 
-        # Create .compyle directory
-        compyle_dir = os.path.join(workspace_path, ".compyle")
-        os.makedirs(compyle_dir, exist_ok=True)
-        os.makedirs(os.path.join(compyle_dir, "logs"), exist_ok=True)
+        # Create .OrbitSpace directory
+        OrbitSpace_dir = os.path.join(workspace_path, ".OrbitSpace")
+        os.makedirs(OrbitSpace_dir, exist_ok=True)
+        os.makedirs(os.path.join(OrbitSpace_dir, "logs"), exist_ok=True)
 
         # Write metadata.json
-        metadata_path = os.path.join(compyle_dir, "metadata.json")
+        metadata_path = os.path.join(OrbitSpace_dir, "metadata.json")
         async with aiofiles.open(metadata_path, "w") as f:
             await f.write(json.dumps(metadata, indent=2))
 
@@ -51,7 +51,7 @@ class FileManager:
             "pending_question": None,
             "decisions_made": []
         }
-        session_path = os.path.join(compyle_dir, "session.json")
+        session_path = os.path.join(OrbitSpace_dir, "session.json")
         async with aiofiles.open(session_path, "w") as f:
             await f.write(json.dumps(session_data, indent=2))
 
@@ -103,7 +103,7 @@ class FileManager:
         """Read metadata.json"""
         metadata_path = os.path.join(
             self.get_workspace_path(project_id),
-            ".compyle",
+            ".OrbitSpace",
             "metadata.json"
         )
         async with aiofiles.open(metadata_path, "r") as f:
@@ -114,7 +114,7 @@ class FileManager:
         """Update session.json"""
         session_path = os.path.join(
             self.get_workspace_path(project_id),
-            ".compyle",
+            ".OrbitSpace",
             "session.json"
         )
         async with aiofiles.open(session_path, "w") as f:

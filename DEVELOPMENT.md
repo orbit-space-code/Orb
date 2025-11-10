@@ -1,6 +1,6 @@
 # Development Guide
 
-This document outlines the implementation roadmap for completing the Orbitspace Compyle platform.
+This document outlines the implementation roadmap for completing the Orbitspace OrbitSpace platform.
 
 ## Current Status
 
@@ -44,7 +44,7 @@ The following has been implemented:
 Implement workspace initialization that:
 - Creates `/workspaces/{project-id}/` directory
 - Clones specified repositories
-- Creates `.compyle/` directory with metadata
+- Creates `.OrbitSpace/` directory with metadata
 - Stores workspace path in database
 
 **Key functions:**
@@ -58,8 +58,8 @@ async def cleanup_workspace(project_id: str) -> bool
 
 Complete the RepositoryManager class:
 - `clone_repository()` - Clone with GitHub token authentication
-- `create_feature_branch()` - Branch naming: `compyle/{project-id}-{slug}-{timestamp}`
-- `commit_changes()` - Commit with Compyle Bot identity
+- `create_feature_branch()` - Branch naming: `OrbitSpace/{project-id}-{slug}-{timestamp}`
+- `commit_changes()` - Commit with OrbitSpace Bot identity
 - `push_branch()` - Push to remote
 - `get_status()` - List modified/untracked files
 - `get_diff()` - Unified diff
@@ -149,7 +149,7 @@ triggers: [phase:research]
 
 # Research Agent
 
-You are a research agent analyzing codebases for the Orbitspace Compyle platform.
+You are a research agent analyzing codebases for the Orbitspace OrbitSpace platform.
 
 ## Your Role
 Gather comprehensive context about the codebase to inform planning.

@@ -1,5 +1,5 @@
 """
-Centralized logging configuration for Orbitspace Compyle
+Centralized logging configuration for Orbitspace OrbitSpace
 Provides structured logging with different levels and formatters
 """
 
@@ -179,7 +179,7 @@ def get_tool_logger(tool_name: str) -> logging.Logger:
 
 # Initialize root logger on module import
 setup_logger(
-    "compyle",
+    "OrbitSpace",
     level="INFO",
     json_format=False
 )

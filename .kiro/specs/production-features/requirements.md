@@ -6,7 +6,7 @@ This specification defines the production-ready features needed to complete the 
 
 ## Glossary
 
-- **Orb_Platform**: The AI coding agent platform that replicates compyle.ai functionality
+- **Orb_Platform**: The AI coding agent platform that replicates OrbitSpace functionality
 - **Pull_Request_System**: GitHub API integration for automated PR creation and management
 - **Workspace_Cleanup_System**: Automated cleanup of temporary workspaces and repositories
 - **Rate_Limiting_System**: API request throttling and quota management
