@@ -289,6 +289,65 @@ Follow your instructions systematically. Use the tools available to you."""
                     # Get tool
                     tool = self.tool_registry.get_tool(tool_name)
 
+                    # Ask-before-build approval gate for risky tools
+                    risky_tools = {"edit", "bash", "git", "refactor", "testgenerator"}
+                    normalized_tool = (tool_name or "").lower()
+                    if normalized_tool in risky_tools:
+                        try:
+                            ask_tool = self.tool_registry.get_tool("AskUser")
+                            # Build concise question with redacted/trimmed input
+                            try:
+                                summarized_input = json.dumps(tool_input)[:800]
+                            except Exception:
+                                summarized_input = str(tool_input)[:800]
+
+                            question = (
+                                f"Approve the following tool action?\n\n"
+                                f"Tool: {tool_name}\n"
+                                f"Workspace: {workspace_path}\n"
+                                f"Input: {summarized_input}"
+                            )
+                            approval = await ask_tool.execute(
+                                project_id=project_id,
+                                question=question,
+                                choices=["Approve", "Reject", "Modify plan"],
+                                image_url=None,
+                                timeout=300
+                            )
+
+                            decision = (approval or {}).get("answer", "Reject")
+                            if decision != "Approve":
+                                # Publish user-declined event
+                                await self._publish_event(project_id, "tool_skipped", {
+                                    "tool": tool_name,
+                                    "reason": f"User decision: {decision}"
+                                })
+                                # Return a tool_result back to the model so it can adapt
+                                tool_results.append({
+                                    "type": "tool_result",
+                                    "tool_use_id": tool_use_id,
+                                    "content": json.dumps({
+                                        "status": "skipped",
+                                        "reason": f"User decision: {decision}",
+                                    }, indent=2)
+                                })
+                                continue
+                        except Exception:
+                            # If AskUser is unavailable, default to safety: skip risky action
+                            await self._publish_event(project_id, "tool_skipped", {
+                                "tool": tool_name,
+                                "reason": "AskUser unavailable; skipping risky action"
+                            })
+                            tool_results.append({
+                                "type": "tool_result",
+                                "tool_use_id": tool_use_id,
+                                "content": json.dumps({
+                                    "status": "skipped",
+                                    "reason": "AskUser unavailable; skipping risky action",
+                                }, indent=2)
+                            })
+                            continue
+
                     # Execute tool
                     result = await tool.execute(**tool_input)
 
