@@ -1,0 +1,66 @@
+# AWS Amplify Environment Variables
+# Real values from current environment
+
+# Database Configuration
+DATABASE_URL="postgres://6fa1ed1c09f5e9585e2a2516ac58f2ee97e6ce0475877afb4a19a7a398906179:sk_EwRCK3t3dFOwPDhGRJkdz@db.prisma.io:5432/postgres?sslmode=require"
+
+# Redis Configuration  
+REDIS_URL="https://ready-grackle-10080.upstash.io"
+REDIS_TOKEN="ASdgAAIncDJkZjZiMDM1MjMwZDU0NzU0YWFjZjllNTI5ODliYzUxZnAyMTAwODA"
+
+# FastAPI Configuration
+FASTAPI_SECRET_KEY="023db9afa66a8adf2e9ba559c2aee298d2e7e9c6ac06440b4129999854fc91ed06e0740857f7eae8fcc6a887d45174c62e369038951063a5fb9a7ca972d22612"
+FASTAPI_URL="https://api.orbitspace.org"
+FASTAPI_CORS_ORIGINS="https://orbitspace.org,https://www.orbitspace.org,https://api.orbitspace.org"
+
+# GitHub OAuth Configuration
+GITHUB_CLIENT_ID="Iv23lir8890szUNAwMpg"
+GITHUB_CLIENT_SECRET="4510c038115c2558159ac92dbbb344777585c9aa"
+GITHUB_APP_ID="2238196"
+GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEA9lSgELf3EYA4fAVVv+48RJERxU4ogr1tzA87IxZVdtBlmwrc
+lmZGiiu9Wp4W7mJtFZSxYqdAilLLbmF0ySLcLZfpVnDwTtBAd9aLGQtvumewDNrQ
+fv9G9jQqCjzjTmFE9V4jMjEj8mlSTIv25Mnhewo+WclcPBd1Mm+DUQAJ6DbR7mKrp
+2Yd0y4OaUkYUDpoo3ukv93cAidPGC2NGfBtHTRsRsCbTBG9FVA9+m+UPrRvaehha
+FF1OIfIeaTsZe0tP1b1o8r3Q9bqQMxFUAqJT8090copKL/glcJhgS/zFDu86ox7bd
+aIGU8EdKrywmp1sIkL8sTiD9sP7cexV/1OjQIDAQABAoIBAQCUkmYYr1ytiZCH/Q
+/DO4XONVFql8GHWYmn0mfwub/Ccd9WrC5v6DATll4XEdLy5Rq2MYDr58TdqSJZ6R3
+vUr9KIJ30LRpD7wdzQEuVR3iUDYX5uuCWOJIsXToeAqt20uQsuiKwW0M7Kpsg4Cq
+Bw+HjvEHvFawz8lIVoXyqlkNjcr4jQqro3LdoQXTs3SEqKGx6t8VmtddyaVmvG+T
+vhOe130llBJ79Ny6ttWl0s8gnwaSVWZ9oSecCl9iSfoq7BKiLRMzlPDUsgcR4fG7
+yi/0UTAQQbs8Kia8boToy3Rp7QlKyt3xUsknAvEcEIEeiQmA8/Z7ZzbRn/RwzheA
+UgIgBAoGBAP+XAxK3PyeiHz0j7m1URNvt888XACoiwOYKHVkAaWo56NODXcOF
+-----END RSA PRIVATE KEY-----"
+
+# Next.js Configuration
+NEXTAUTH_SECRET="cf1a445ae06847193e223ef808030cbf155053e5822daa7253f662c6059d97f9d46d4eacbb68a307650f1c4a1ed9a315abcec826cc5191f57724e35f31541409"
+NEXTAUTH_URL="https://orbitspace.org"
+NEXTJS_API_SECRET="lqQ+sdgdxU6+Oy2hmEC1bA2hOUjmhTsel1a+jkfenb8="
+
+# AWS Configuration
+AWS_REGION="us-east-1"
+AWS_DEFAULT_REGION="us-east-1"
+
+# Application Configuration
+NODE_ENV="production"
+PYTHON_ENV="production"
+
+# Security Configuration
+ENCRYPTION_KEY="a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2"
+
+# Agent Configuration
+ANTHROPIC_API_KEY="your_anthropic_api_key"
+RESEARCH_AGENT_MODEL="claude-sonnet-4"
+PLANNING_AGENT_MODEL="claude-sonnet-4"
+IMPLEMENTATION_AGENT_MODEL="claude-haiku-4"
+REVIEW_AGENT_MODEL="claude-sonnet-4"
+MAX_CONCURRENT_AGENTS=5
+
+# Workspace Configuration
+WORKSPACE_ROOT="/workspaces"
+WORKSPACE_MAX_SIZE_GB=10
+GIT_BOT_NAME="OrbitSpace-bot"
+GIT_BOT_EMAIL="bot@orbitspace.org"
+ALLOWED_BASH_COMMANDS="ls,cat,grep,git,npm,python,node,pytest,jest"
+BASH_TIMEOUT_SECONDS=60
+MAX_FILE_READ_SIZE_MB=1

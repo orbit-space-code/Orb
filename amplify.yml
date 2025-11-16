@@ -1,0 +1,54 @@
+version: 1
+appId: d2hrq8nzx5xf6w
+region: us-west-1
+framework: Next.js - SSR
+backend:
+  phases:
+    preBuild:
+      commands:
+        - npm install -g aws-cdk
+        - python -m pip install -r requirements.txt
+        - pip install python-dotenv mangum
+    build:
+      commands:
+        - python -m pytest tests/ --cov=src --ignore=tests/integration
+    postBuild:
+      commands:
+        - echo "Backend build completed"
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm install
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
+test:
+  phases:
+    preTest:
+      commands:
+        - npm install
+        - python -m pip install -r requirements.txt
+    test:
+      commands:
+        - npm test -- --passWithNoTests
+        - python -m pytest tests/ --cov=src --ignore=tests/integration
+    postTest:
+      commands:
+        - echo "Test completed"
+
+# Environment variables for Amplify
+env:
+  variables:
+    PYTHON_ENV: production
+    NODE_ENV: production
+    AWS_REGION: us-west-1
+    AMPLIFY_URL: https://orbitspace.org
