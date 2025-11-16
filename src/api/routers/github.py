@@ -3,7 +3,7 @@ GitHub Integration API
 Handles GitHub repository operations and webhook management
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, HttpUrl, Field
 import logging
@@ -76,7 +76,14 @@ async def github_auth_redirect():
     try:
         # GitHub OAuth configuration
         client_id = settings.GITHUB_CLIENT_ID
-        redirect_uri = f"{settings.BASE_URL}/api/github/auth/callback"
+        
+        if not client_id:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID environment variable."
+            )
+        
+        redirect_uri = f"{settings.BASE_URL or 'http://localhost:8000'}/api/github/auth/callback"
         scope = "repo,user"
         
         # Build GitHub OAuth URL
@@ -87,16 +94,16 @@ async def github_auth_redirect():
             f"scope={scope}"
         )
         
-        return JSONResponse({
-            "auth_url": auth_url,
-            "message": "Redirect to GitHub for authorization"
-        })
+        # Redirect user to GitHub
+        return RedirectResponse(auth_url)
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"GitHub auth redirect error: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate GitHub authorization URL"
+            detail="Error generating GitHub authorization URL"
         )
 
 @router.post("/auth/callback", response_model=GitHubAuthResponse)
