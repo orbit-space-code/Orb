@@ -106,6 +106,68 @@ async def github_auth_redirect():
             detail="Error generating GitHub authorization URL"
         )
 
+@router.get("/auth/callback")
+async def github_auth_callback_get(request: Request):
+    """Handle GitHub OAuth callback via GET request"""
+    try:
+        # Get authorization code from query parameters
+        code = request.query_params.get("code")
+        error = request.query_params.get("error")
+        
+        if error:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"GitHub OAuth error: {error}"
+            )
+        
+        if not code:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No authorization code received from GitHub"
+            )
+        
+        import httpx
+        
+        # Exchange code for access token
+        token_url = "https://github.com/login/oauth/access_token"
+        data = {
+            "client_id": settings.GITHUB_CLIENT_ID,
+            "client_secret": settings.GITHUB_CLIENT_SECRET,
+            "code": code,
+            "redirect_uri": f"{settings.BASE_URL or 'http://localhost:8000'}/api/github/auth/callback"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(token_url, data=data)
+            response.raise_for_status()
+            
+            # Parse response (GitHub returns form-urlencoded)
+            from urllib.parse import parse_qs
+            token_data = parse_qs(response.text)
+            access_token = token_data.get("access_token", [""])[0]
+            
+            if not access_token:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to obtain access token from GitHub"
+                )
+            
+            # Redirect to frontend with success
+            from fastapi.responses import RedirectResponse
+            return RedirectResponse(
+                url=f"{settings.BASE_URL or 'http://localhost:8000'}?github_auth_success=true",
+                status_code=302
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"GitHub OAuth callback error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error during GitHub OAuth callback"
+        )
+
 @router.post("/auth/callback", response_model=GitHubAuthResponse)
 async def github_auth_callback(
     request: Request,
