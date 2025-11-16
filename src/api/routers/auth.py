@@ -246,6 +246,6 @@ async def confirm_password_reset(confirm: PasswordResetConfirm):
         )
 
 @router.get("/me", response_model=User)
-async def read_users_me(current_user: User = Depends(auth_service.get_current_active_user)):
+async def read_users_me(current_user: User = Depends(auth_service.get_current_user)):
     """Get current user information"""
     return current_user

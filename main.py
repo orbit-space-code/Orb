@@ -23,6 +23,8 @@ from fastapi.templating import Jinja2Templates
 # Import services
 from src.api.routes import router, set_dependencies
 from src.api.routers import debug as debug_router
+from src.api.routers import auth as auth_router
+from src.api.routers import github as github_router
 from src.orchestrator.workspace import WorkspaceManager
 from src.orchestrator.meta_agent import MetaAgent
 from src.orchestrator.redis_client import get_redis_client
@@ -157,6 +159,8 @@ app.add_middleware(
 # Include routers
 app.include_router(router, prefix="/api/v1")
 app.include_router(debug_router.router)
+app.include_router(auth_router.router)
+app.include_router(github_router.router)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")

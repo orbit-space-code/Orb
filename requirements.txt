@@ -20,3 +20,7 @@ reportlab==4.0.7
 sentry-sdk[fastapi]==1.40.0
 mangum==0.17.0
 python-dotenv==1.0.0
+passlib
+python-jose==1.0.0
+email-validator==1.0.0
+PyGithub==1.0.0

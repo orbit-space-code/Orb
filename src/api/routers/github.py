@@ -12,8 +12,11 @@ import hashlib
 import json
 
 from ...services.github_service import GitHubService, GitRepository, GitFile, GitBranch
-from ...auth.service import get_current_active_user, User
-from ...core.config import settings
+from ...auth.service import (
+    auth_service,
+    User
+)
+from ...config import settings
 
 router = APIRouter(prefix="/api/github", tags=["github"])
 logger = logging.getLogger(__name__)
@@ -61,38 +64,98 @@ class FileUpdateRequest(BaseModel):
     branch: str = "main"
     sha: Optional[str] = None  # Required for updates, None for new files
 
-# Initialize GitHub service
-github_service = GitHubService()
+# GitHub service will be initialized per request
+github_service = None
 
 # Webhook secret for GitHub
 WEBHOOK_SECRET = settings.GITHUB_WEBHOOK_SECRET
 
+@router.get("/auth")
+async def github_auth_redirect():
+    """Redirect user to GitHub OAuth authorization page"""
+    try:
+        # GitHub OAuth configuration
+        client_id = settings.GITHUB_CLIENT_ID
+        redirect_uri = f"{settings.BASE_URL}/api/github/auth/callback"
+        scope = "repo,user"
+        
+        # Build GitHub OAuth URL
+        auth_url = (
+            f"https://github.com/login/oauth/authorize?"
+            f"client_id={client_id}&"
+            f"redirect_uri={redirect_uri}&"
+            f"scope={scope}"
+        )
+        
+        return JSONResponse({
+            "auth_url": auth_url,
+            "message": "Redirect to GitHub for authorization"
+        })
+        
+    except Exception as e:
+        logger.error(f"GitHub auth redirect error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate GitHub authorization URL"
+        )
+
 @router.post("/auth/callback", response_model=GitHubAuthResponse)
 async def github_auth_callback(
     request: Request,
-    auth_request: GitHubAuthRequest,
-    current_user: User = Depends(get_current_active_user)
+    auth_request: GitHubAuthRequest
 ):
     """Exchange GitHub OAuth code for access token"""
     try:
-        # In a real implementation, you would exchange the code for an access token
-        # using GitHub's OAuth API
-        # For now, we'll just return a mock response
-        return {
-            "access_token": "gho_mock_access_token_1234567890",
-            "token_type": "bearer",
-            "scope": "repo,user"
+        import httpx
+        
+        # Exchange code for access token
+        token_url = "https://github.com/login/oauth/access_token"
+        data = {
+            "client_id": settings.GITHUB_CLIENT_ID,
+            "client_secret": settings.GITHUB_CLIENT_SECRET,
+            "code": auth_request.code,
+            "redirect_uri": f"{settings.BASE_URL}/api/github/auth/callback"
         }
-    except Exception as e:
-        logger.error(f"GitHub auth error: {str(e)}", exc_info=True)
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(token_url, data=data)
+            response.raise_for_status()
+            
+            # Parse response (GitHub returns form-urlencoded)
+            from urllib.parse import parse_qs
+            token_data = parse_qs(response.text)
+            access_token = token_data.get("access_token", [""])[0]
+            token_type = token_data.get("token_type", [""])[0]
+            scope = token_data.get("scope", [""])[0]
+            
+            if not access_token:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to obtain access token from GitHub"
+                )
+            
+            return {
+                "access_token": access_token,
+                "token_type": token_type,
+                "scope": scope
+            }
+            
+    except httpx.HTTPError as e:
+        logger.error(f"GitHub token exchange error: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Failed to authenticate with GitHub"
+            detail="Failed to exchange code for access token"
+        )
+    except Exception as e:
+        logger.error(f"GitHub auth callback error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error processing GitHub OAuth callback"
         )
 
 @router.get("/repos", response_model=List[GitRepository])
 async def list_repositories(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(auth_service.get_current_user)
 ):
     """List all repositories for the authenticated user"""
     try:
@@ -117,7 +180,7 @@ async def list_repositories(
 async def get_repository(
     owner: str,
     repo: str,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(auth_service.get_current_user)
 ):
     """Get a specific repository"""
     try:
@@ -136,7 +199,7 @@ async def get_file_content(
     repo: str,
     path: str,
     ref: str = "main",
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(auth_service.get_current_user)
 ):
     """Get file content from a repository"""
     try:
@@ -160,7 +223,7 @@ async def create_branch(
     owner: str,
     repo: str,
     branch_data: CreateBranchRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(auth_service.get_current_user)
 ):
     """Create a new branch"""
     try:
@@ -183,7 +246,7 @@ async def create_pull_request(
     owner: str,
     repo: str,
     pr_data: CreatePullRequestRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(auth_service.get_current_user)
 ):
     """Create a new pull request"""
     try:
@@ -210,7 +273,7 @@ async def update_file(
     repo: str,
     path: str,
     file_data: FileUpdateRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(auth_service.get_current_user)
 ):
     """Create or update a file in a repository"""
     try:
@@ -350,7 +413,7 @@ async def github_webhook(
 
 @router.get("/rate-limit", response_model=Dict[str, Any])
 async def get_rate_limit(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(auth_service.get_current_user)
 ):
     """Get GitHub API rate limit information"""
     try:

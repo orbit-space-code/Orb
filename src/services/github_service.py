@@ -23,8 +23,7 @@ from github.GithubException import (
     GithubException, 
     UnknownObjectException, 
     BadCredentialsException, 
-    RateLimitExceededException,
-    GithubIntegrationException
+    RateLimitExceededException
 )
 from github.File import File as GithubFile
 

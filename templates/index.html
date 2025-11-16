@@ -3,388 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orb Debugger</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <title>OrbitSpace</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        .CodeMirror {
-            height: 70vh;
-            font-size: 14px;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            overflow-x: hidden;
         }
-        .breakpoint {
-            color: #ff5c5c;
-            cursor: pointer;
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .current-line {
-            background-color: rgba(255, 255, 0, 0.2);
+
+        .neon-glow {
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.8),
+                         0 0 20px rgba(102, 126, 234, 0.6),
+                         0 0 30px rgba(102, 126, 234, 0.4);
         }
-        .variable-value {
-            font-family: monospace;
-            white-space: pre;
+
+        .card-hover {
+            transition: all 0.3s ease;
         }
-        .watch-expression {
-            background: #2d3748;
-            padding: 0.5rem;
-            margin: 0.25rem 0;
-            border-radius: 0.25rem;
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .github-btn {
+            background: #24292e;
+            transition: all 0.3s ease;
+        }
+
+        .github-btn:hover {
+            background: #2f363d;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(36, 41, 46, 0.3);
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100">
-    <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
-        <div class="w-1/4 bg-gray-800 flex flex-col h-full">
-            <!-- Debug Controls -->
-            <div class="p-4 bg-gray-900 border-b border-gray-700">
-                <div class="flex space-x-2 mb-4">
-                    <button onclick="continueExecution()" class="px-3 py-1 bg-green-600 rounded hover:bg-green-700">
-                        Continue (F5)
-                    </button>
-                    <button onclick="pauseExecution()" class="px-3 py-1 bg-yellow-600 rounded hover:bg-yellow-700">
-                        Pause
-                    </button>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Animated Background -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- Navigation -->
+    <nav class="relative z-10 bg-gray-900 bg-opacity-50 backdrop-blur-md border-b border-gray-800">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
+                    <span class="text-2xl font-bold gradient-text">OrbitSpace</span>
                 </div>
-                <div class="flex space-x-2">
-                    <button onclick="stepOver()" class="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700">
-                        Step Over (F10)
-                    </button>
-                    <button onclick="stepInto()" class="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700">
-                        Step Into (F11)
-                    </button>
-                    <button onclick="stepOut()" class="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700">
-                        Step Out (Shift+F11)
-                    </button>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#features" class="hover:text-purple-400 transition">Features</a>
+                    <a href="#about" class="hover:text-purple-400 transition">About</a>
+                    <a href="#contact" class="hover:text-purple-400 transition">Contact</a>
                 </div>
-            </div>
-
-            <!-- Variables Panel -->
-            <div class="flex-1 overflow-auto p-4">
-                <h3 class="font-bold mb-2">Variables</h3>
-                <div id="variables" class="space-y-2"></div>
-            </div>
-
-            <!-- Watch Panel -->
-            <div class="p-4 border-t border-gray-700">
-                <div class="flex mb-2">
-                    <input type="text" id="watch-input" 
-                           class="flex-1 bg-gray-700 text-white px-2 py-1 rounded-l"
-                           placeholder="Add watch expression">
-                    <button onclick="addWatch()" 
-                            class="bg-blue-600 hover:bg-blue-700 px-3 rounded-r">
-                        Add
-                    </button>
-                </div>
-                <div id="watches" class="space-y-2"></div>
+                <button onclick="window.location.href='/api/github/auth'" class="github-btn px-6 py-2 rounded-full text-white flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    <span>Sign in with GitHub</span>
+                </button>
             </div>
         </div>
+    </nav>
 
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col h-full overflow-hidden">
-            <!-- Toolbar -->
-            <div class="bg-gray-800 p-2 flex justify-between items-center">
-                <div class="flex space-x-2">
-                    <button onclick="loadFile()" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600">
-                        Open File
-                    </button>
-                    <button onclick="saveFile()" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600">
-                        Save
-                    </button>
-                </div>
-                <div id="status" class="text-sm text-gray-400">Ready</div>
-            </div>
-
-            <!-- Editor -->
-            <div class="flex-1 overflow-hidden">
-                <textarea id="editor"></textarea>
-            </div>
-
-            <!-- Console -->
-            <div class="h-1/4 bg-black bg-opacity-50 overflow-auto p-2 font-mono text-sm">
-                <div class="font-bold mb-1">Console</div>
-                <div id="console" class="space-y-1"></div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
-    <script>
-        // Initialize CodeMirror
-        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
-            lineNumbers: true,
-            mode: 'python',
-            theme: 'dracula',
-            lineWrapping: true,
-            gutters: ["CodeMirror-linenumbers", "breakpoints"],
-            extraKeys: {
-                'F5': continueExecution,
-                'F10': stepOver,
-                'F11': stepInto,
-                'Shift-F11': stepOut
-            }
-        });
-
-        // WebSocket connection
-        let ws;
-        let currentLine = null;
-        let breakpoints = new Set();
-        let watches = [];
-
-        function connectWebSocket() {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/debug/ws/${Date.now()}`;
-            ws = new WebSocket(wsUrl);
-
-            ws.onopen = () => {
-                logToConsole('Debugger connected');
-                updateStatus('Connected');
-            };
-
-            ws.onclose = () => {
-                logToConsole('Debugger disconnected');
-                updateStatus('Disconnected');
-                // Try to reconnect after 2 seconds
-                setTimeout(connectWebSocket, 2000);
-            };
-
-            ws.onmessage = (event) => {
-                const message = JSON.parse(event.data);
-                console.log('Message from server:', message);
-                
-                switch (message.type) {
-                    case 'breakpoint_hit':
-                        highlightLine(message.data.line - 1);
-                        updateVariables(message.data.variables);
-                        updateWatches();
-                        updateStatus(`Paused at line ${message.data.line}`);
-                        break;
-                    case 'function_entry':
-                        logToConsole(`→ ${message.data.name}(${formatArgs(message.data.args)})`);
-                        break;
-                    case 'function_exit':
-                        logToConsole(`← ${message.data.name} returned`);
-                        break;
-                    case 'error':
-                        logToConsole(`ERROR: ${message.data.error}`, 'text-red-400');
-                        logToConsole(message.data.traceback, 'text-red-400 text-xs');
-                        break;
-                    case 'evaluation_result':
-                        logToConsole(`> ${message.data.expression} = ${message.data.result} (${message.data.type})`);
-                        break;
-                    case 'evaluation_error':
-                        logToConsole(`Error: ${message.data.error}`, 'text-yellow-400');
-                        break;
-                }
-            };
-        }
-
-        // Debugger control functions
-        function sendCommand(command, data = {}) {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: command, data }));
-            } else {
-                logToConsole('Not connected to debugger', 'text-yellow-400');
-            }
-        }
-
-        function continueExecution() {
-            updateStatus('Running...');
-            sendCommand('continue_execution');
-        }
-
-        function pauseExecution() {
-            sendCommand('pause');
-        }
-
-        function stepOver() {
-            updateStatus('Stepping over...');
-            sendCommand('step_over');
-        }
-
-        function stepInto() {
-            updateStatus('Stepping into...');
-            sendCommand('step_into');
-        }
-
-        function stepOut() {
-            updateStatus('Stepping out...');
-            sendCommand('step_out');
-        }
-
-        // Breakpoint management
-        editor.on("gutterClick", (cm, line) => {
-            const info = cm.lineInfo(line);
-            
-            if (info.gutterMarkers) {
-                // Remove breakpoint
-                cm.setGutterMarker(line, "breakpoints", null);
-                sendCommand('remove_breakpoint', {
-                    filePath: 'current_file.py',
-                    lineNumber: line + 1
-                });
-            } else {
-                // Add breakpoint
-                const marker = document.createElement("div");
-                marker.innerHTML = "●";
-                marker.className = "breakpoint";
-                cm.setGutterMarker(line, "breakpoints", marker);
-                sendCommand('add_breakpoint', {
-                    filePath: 'current_file.py',
-                    lineNumber: line + 1
-                });
-            }
-        });
-
-        // Watch expressions
-        function addWatch() {
-            const input = document.getElementById('watch-input');
-            const expr = input.value.trim();
-            
-            if (expr && !watches.includes(expr)) {
-                watches.push(expr);
-                renderWatches();
-                input.value = '';
-                updateWatches();
-            }
-        }
-
-        function removeWatch(expr) {
-            const index = watches.indexOf(expr);
-            if (index > -1) {
-                watches.splice(index, 1);
-                renderWatches();
-            }
-        }
-
-        function renderWatches() {
-            const container = document.getElementById('watches');
-            container.innerHTML = '';
-            
-            watches.forEach(expr => {
-                const div = document.createElement('div');
-                div.className = 'watch-expression flex justify-between items-center';
-                div.innerHTML = `
-                    <span>${escapeHtml(expr)}</span>
-                    <div>
-                        <span id="watch-${expr.replace(/\W/g, '_')}" class="text-gray-400">?</span>
-                        <button onclick="removeWatch('${escapeHtml(expr)}')" class="text-red-400 hover:text-red-300 ml-2">×</button>
+    <!-- Hero Section -->
+    <section class="relative z-10 min-h-screen flex items-center justify-center px-6">
+        <div class="text-center max-w-4xl">
+            <div class="mb-8">
+                <div class="w-32 h-32 mx-auto bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <div class="w-24 h-24 bg-gray-900 rounded-full flex items-center justify-center">
+                        <div class="w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full"></div>
                     </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function updateWatches() {
-            watches.forEach(expr => {
-                sendCommand('evaluate', { expression: expr });
-            });
-        }
-
-        // Helper functions
-        function highlightLine(line) {
-            if (currentLine !== null) {
-                editor.removeLineClass(currentLine, 'background', 'current-line');
-            }
+                </div>
+            </div>
             
-            currentLine = line;
-            editor.addLineClass(line, 'background', 'current-line');
-            editor.scrollIntoView({ line, ch: 0 }, 100);
-        }
-
-        function updateVariables(vars) {
-            const container = document.getElementById('variables');
-            container.innerHTML = '';
+            <h1 class="text-6xl md:text-8xl font-bold mb-6 neon-glow">
+                <span class="gradient-text">OrbitSpace</span>
+            </h1>
             
-            for (const [name, value] of Object.entries(vars)) {
-                const div = document.createElement('div');
-                div.className = 'text-sm';
-                div.innerHTML = `
-                    <span class="text-blue-400">${escapeHtml(name)}</span>: 
-                    <span class="variable-value">${formatValue(value)}</span>
-                `;
-                container.appendChild(div);
+            <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                Collaborative AI coding agent platform built on Claude
+            </p>
+            
+            <p class="text-lg text-gray-400 mb-12 max-w-3xl mx-auto">
+                Less autonomous, more control. Keep developers in the driver's seat while automating complex code generation with AI agents.
+            </p>
+            
+            <button onclick="window.location.href='/api/github/auth'" class="github-btn px-8 py-4 rounded-full text-lg font-semibold text-white flex items-center space-x-3 mx-auto">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                <span>Sign in with GitHub</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="relative z-10 py-20 px-6">
+        <div class="container mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 gradient-text">
+                Platform Features
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card-hover bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-xl border border-gray-700">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg mb-6 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Research</h3>
+                    <p class="text-gray-300">AI agents analyze your codebase, understand patterns, and document findings</p>
+                </div>
+                
+                <div class="card-hover bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-xl border border-gray-700">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg mb-6 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Planning</h3>
+                    <p class="text-gray-300">Interactive planning with clarifying questions to ensure perfect specifications</p>
+                </div>
+                
+                <div class="card-hover bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-xl border border-gray-700">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg mb-6 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Implementation</h3>
+                    <p class="text-gray-300">Multiple specialized agents write code, with overwatchers ensuring quality</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 bg-gray-900 bg-opacity-50 backdrop-blur-md border-t border-gray-800 py-8 px-6">
+        <div class="container mx-auto text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
+                <span class="text-xl font-bold gradient-text">OrbitSpace</span>
+            </div>
+            <p class="text-gray-400">© 2024 OrbitSpace. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Generate random stars
+        function generateStars() {
+            const starsContainer = document.getElementById('stars');
+            const numberOfStars = 100;
+            
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
             }
         }
 
-        function logToConsole(message, className = '') {
-            const console = document.getElementById('console');
-            const entry = document.createElement('div');
-            entry.className = className;
-            entry.textContent = message;
-            console.appendChild(entry);
-            console.scrollTop = console.scrollHeight;
-        }
+        // Initialize animations
+        generateStars();
 
-        function updateStatus(message) {
-            document.getElementById('status').textContent = message;
-        }
+        // Add parallax effect on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const stars = document.getElementById('stars');
+            stars.style.transform = `translateY(${scrolled * 0.5}px)`;
+        });
 
-        function formatValue(value) {
-            if (value === undefined) return 'undefined';
-            if (value === null) return 'null';
-            if (Array.isArray(value)) return `[${value.map(formatValue).join(', ')}]`;
-            if (typeof value === 'object') {
-                try {
-                    return JSON.stringify(value, null, 2);
-                } catch (e) {
-                    return String(value);
-                }
-            }
-            return String(value);
-        }
-
-        function formatArgs(args) {
-            if (!args) return '';
-            return Object.entries(args)
-                .map(([k, v]) => `${k}=${formatValue(v)}`)
-                .join(', ');
-        }
-
-        function escapeHtml(unsafe) {
-            return unsafe
-                .toString()
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        // File operations
-        function loadFile() {
-            // In a real app, you would implement file loading here
-            logToConsole('File loading not implemented in this demo');
-        }
-
-        function saveFile() {
-            // In a real app, you would implement file saving here
-            logToConsole('File saving not implemented in this demo');
-        }
-
-        // Initialize
-        connectWebSocket();
-        
-        // Load sample code
-        const sampleCode = `def fibonacci(n):
-    if n <= 1:
-        return n
-    return fibonacci(n-1) + fibonacci(n-2)
-
-# Set a breakpoint by clicking in the gutter
-result = fibonacci(5)
-print(f"Fibonacci of 5 is: {result}")
-
-# Try stepping through this function
-def greet(name):
-    greeting = f"Hello, {name}!"
-    return greeting
-
-message = greet("World")
-print(message)
-`;
-        
-        editor.setValue(sampleCode);
+        // GitHub OAuth handler
+        document.querySelectorAll('.github-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Redirect to GitHub OAuth
+                window.location.href = '/api/auth/github';
+            });
+        });
     </script>
 </body>
 </html>
