@@ -30,7 +30,7 @@ export default async function DashboardPage() {
       <header className="border-b border-gray-800 bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-white">Orbitspace OrbitSpace</h1>
+            <h1 className="text-2xl font-bold text-white">OrbitSpace</h1>
             <div className="flex items-center gap-4">
               <span className="text-gray-400">
                 {session.user.name || session.user.email}
